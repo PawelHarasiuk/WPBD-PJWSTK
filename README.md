@@ -1,4 +1,4 @@
-# Kafka-Spark-Postgres Data Processing Pipeline
+# WPBD
 
 This project implements a data processing pipeline using Apache Kafka, Apache Spark, PostgreSQL, and MinIO. It includes a Debezium connector for CDC (Change Data Capture) and Kafka UI for monitoring.
 
