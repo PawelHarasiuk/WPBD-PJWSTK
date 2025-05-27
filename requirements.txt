@@ -1,0 +1,7 @@
+pandas~=2.2.3
+SQLAlchemy~=2.0.40
+scikit-learn
+kafka-python
+pyspark
+psycopg2-binary
+psycopg2
