@@ -137,9 +137,7 @@ services:
     restart: "no"
 
   spark-master:
-    image: bitnami/spark:latest
-    networks:
-      - kafka-cluster
+    image: bitnami/spark:3.5.0
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -150,9 +148,7 @@ services:
       - "7077:7077"
 
   spark-worker:
-    image: bitnami/spark:latest
-    networks:
-      - kafka-cluster
+    image: bitnami/spark:3.5.0
     depends_on:
       - spark-master
     environment:
@@ -164,8 +160,7 @@ services:
 
   spark-submit:
     image: bitnami/spark:3.5.0
-    networks:
-      - kafka-cluster
+    network_mode: "host"
     container_name: spark-submit
     depends_on:
       - spark-master
@@ -180,22 +175,25 @@ services:
     volumes:
       - ./app:/opt/spark-jobs
     command:
-      - "/opt/bitnami/spark/bin/spark-submit"
-      - "--packages"
-      - "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.apache.spark:spark-avro_2.12:3.5.0,io.delta:delta-spark_2.12:3.0.0,org.apache.hadoop:hadoop-aws:3.3.4"
-      - "--conf=spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension"
-      - "--conf=spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
-      - "--conf=spark.hadoop.fs.s3a.access.key=minioadmin"
-      - "--conf=spark.hadoop.fs.s3a.secret.key=minioadmin"
-      - "--conf=spark.hadoop.fs.s3a.endpoint=http://minio:9000"
-      - "--conf=spark.hadoop.fs.s3a.path.style.access=true"
-      - "/opt/spark-jobs/job.py"
+      - "/bin/bash"
+      - "-c"
+      - |
+        sleep 40;
+        /opt/bitnami/spark/bin/spark-submit \
+        "--packages" "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,io.delta:delta-spark_2.12:3.0.0,org.apache.hadoop:hadoop-aws:3.3.4" \
+        "--conf=spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+        "--conf=spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
+        "--conf=spark.hadoop.fs.s3a.access.key=minioadmin" \
+        "--conf=spark.hadoop.fs.s3a.secret.key=minioadmin" \
+        "--conf=spark.hadoop.fs.s3a.endpoint=http://localhost:9000" \
+        "--conf=spark.hadoop.fs.s3a.path.style.access=true" \
+        "/opt/spark-jobs/job.py"
     environment:
       SPARK_MODE: master
       SPARK_RPC_AUTHENTICATION_ENABLED: "no"
       SPARK_RPC_ENCRYPTION_ENABLED: "no"
       SPARK_UI_PORT: "4040"
-      PIP_PACKAGES: confluent-kafka==2.10.0
+      PIP_PACKAGES: kafka-python
 #    restart: unless-stopped
   
 
